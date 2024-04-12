@@ -28,7 +28,7 @@ def render(markdown_str: str, color: str, renderer: str):
 
   elif renderer == "lite":
     print(f"\n{md2ansi(markdown_str)}\n")
-    #print_rule(color)
+    print_rule(color)
     #print()
 
   else:

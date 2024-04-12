@@ -58,6 +58,18 @@ def open_conf_file(path: str):
 
 def main():
 
+  config_path = get_config_path("gpt.conf")
+
+  #-- arg handling
+  parser = argparse.ArgumentParser(description="Terminal-based REPL GPT Chat Bot")
+  parser.add_argument("--config", action="store_true", help="open the config file")
+  args = parser.parse_args()
+
+  if args.config:
+    open_conf_file(config_path)
+    sys.exit()
+  #----
+
   #-- initialize / load settings
   spinner = Spinner(message="")
   code_block_manager = CodeBlockManager()
@@ -70,7 +82,6 @@ def main():
   def _(event):
     event.current_buffer.text = ""
 
-  config_path = get_config_path("gpt.conf")
   config = load_config(config_path)
   system_prompt = config['settings']['system-prompt']
   model = config['settings']['model']
@@ -91,16 +102,6 @@ def main():
     color = "orange3"
   else:
     print("invalid model")
-    sys.exit()
-  #----
-
-  #-- arg handling
-  parser = argparse.ArgumentParser(description="Terminal-based REPL GPT Chat Bot")
-  parser.add_argument("--config", action="store_true", help="open the config file")
-  args = parser.parse_args()
-
-  if args.config:
-    open_conf_file(config_path)
     sys.exit()
   #----
 
@@ -248,7 +249,7 @@ def main():
 
     code_block_manager.parse(assistant_response)
 
-    assistant_response = f"\x1b[1m{color_codes[color]}\x1b[4m{model}:\x1b[0m {assistant_response}"
+    assistant_response = f"\x1b[1m{color_codes[color]}{model}:\x1b[0m {assistant_response}"
 
     save_chat(selected_chat, remove_system_message(messages), user_input, assistant_response)
 
