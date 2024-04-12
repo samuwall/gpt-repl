@@ -1,3 +1,6 @@
+> i mostly made this so that i can save battery (terminal vs. browser)
+and use gpt-4-turbo and claude-3-opus in a chat-bot setting with saved chats and without expensive subscriptions
+
 ### gpt-repl
 
 This Python script provides a terminal-based REPL (Read-Eval-Print Loop) interface for interacting with GPT chat models, such as OpenAI's GPT models (e.g., gpt-4-turbo-preview) and Anthropic's Claude models.
