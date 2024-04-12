@@ -1,5 +1,6 @@
 > i mostly made this so that i can save battery (terminal vs. browser)
 and use gpt-4-turbo and claude-3-opus in a chat-bot setting with saved chats and without expensive subscriptions
+>> limited error handling, just for fun and learning python
 
 ### gpt-repl
 
