@@ -87,18 +87,19 @@ def main():
   model = config['settings']['model']
   renderer = config['settings']['renderer']
   always_new_chat = config['settings']['always_new_chat']
+  ai_gen_chat_titles = config['settings']['ai_gen_chat_titles']
 
-  is_openai = False
-  is_anthropic = False
+
+  vendor = ""
   if model.startswith("gpt"):
     from openai import OpenAI
     openai_client = OpenAI()
-    is_openai = True
+    vendor = "openai"
     color = "magenta" if re.match(r"^....4", model) else "green"
   elif model.startswith("claude"):
     from anthropic import Anthropic
     anthropic_client = Anthropic()
-    is_anthropic = True
+    vendor = "anthropic"
     color = "orange3"
   else:
     print("invalid model")
@@ -113,21 +114,15 @@ def main():
   else: 
     selected_chat = sel_chat()
 
-  if not selected_chat:
+  if not selected_chat: # new chat
     is_new_chat = True
-    if is_openai: 
-      messages = [{"role": "system", "content": system_prompt}]
-    if is_anthropic: 
-      messages = []
-    selected_chat = mkdir_new_chat(model)
-    save_system_prompt(selected_chat, system_prompt)
     print(f"\n\x1b[1m{color_codes[color]}{model}:\x1b[0m How can I help you today? \x1b[96m'q' to quit '-h' for help\x1b[0m")
     print_rule(color)
 
   else: # previous chat
     messages = load_chat(selected_chat)
     system_prompt = load_system_prompt(selected_chat)
-    if is_openai:
+    if vendor == "openai":
       # insert the system prompt into beginning of messages
       messages.insert(0, {"role": "system", "content": system_prompt})
 
@@ -195,8 +190,9 @@ def main():
 
     if is_new_chat:
 
-      if is_openai:
-        
+      if vendor == "openai":
+
+        messages = [{"role": "system", "content": system_prompt}]
         messages.append({"role": "user", "content": user_input})
 
         completion = openai_client.chat.completions.create(
@@ -207,7 +203,11 @@ def main():
         assistant_response = completion.choices[0].message.content
         messages.append({"role": "assistant", "content": assistant_response})
 
-      elif is_anthropic:
+        selected_chat = mkdir_new_chat(model, ai_gen_chat_titles, user_input, assistant_response, "openai", openai_client)
+
+      elif vendor == "anthropic":
+
+        messages = []
         messages.append({"role": "user", "content": user_input})
 
         completion = anthropic_client.messages.create(
@@ -220,9 +220,15 @@ def main():
         assistant_response = completion.content[0].text
         messages.append({"role": "assistant", "content": assistant_response})
 
+        selected_chat = mkdir_new_chat(model, ai_gen_chat_titles, user_input, assistant_response, "anthropic", anthropic_client)
+
+      save_system_prompt(selected_chat, system_prompt)
+      is_new_chat = False
+      
+
     else:
       
-      if is_openai:
+      if vendor == "openai":
         messages.append({"role": "user", "content": user_input})
 
         completion = openai_client.chat.completions.create(
@@ -233,7 +239,7 @@ def main():
 
         messages.append({"role": "assistant", "content": assistant_response})
 
-      elif is_anthropic:
+      elif vendor == "anthropic":
         messages.append({"role": "user", "content": user_input})
 
         completion = anthropic_client.messages.create(

@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from .render import render, print_rule
-# from input import getch
+from .input import getch
 
 def clear_lines(num_lines: int):
   if num_lines > 0:
@@ -12,11 +12,11 @@ def clear_lines(num_lines: int):
     sys.stdout.write("\r\x1b[0J")             # clear from cursor to end of screen
     sys.stdout.flush()
 
-def mkdir_new_chat(model: str):
-   # Create chats directory if it doesn't exist
+def mkdir_new_chat(model: str, ai_gen_chat_titles: str, user_input: str, assistant_response: str, vendor: str, client):
+  # Create chats directory if it doesn't exist
   chats = Path(__file__).resolve().parent.parent / "chats"
   chats.mkdir(exist_ok=True)
-  
+
   # Create new chat directory with timestamp
   timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
   chat_dir = chats / f"{timestamp}_{model}"
@@ -30,6 +30,35 @@ def mkdir_new_chat(model: str):
   # Initialize empty chat.md file
   chat_path = chat_dir / "chat.md"
   open(chat_path, "w").close()
+  
+  if ai_gen_chat_titles.lower() == "true":
+    # generate chat title using cheap llm
+    generated_title = ""
+
+    chat_str = f"User: {user_input[:1000]}\nAssistant: {assistant_response[:1000]}"
+    task = "Using a maximum of 4 words, generate a title which captures the main subject of the following trimmed conversation between User and Assistant: "
+    prompt = f"{task}\n{chat_str}"
+
+    if vendor == "openai":
+      completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        max_tokens=20,
+        messages = [{"role": "user", "content": prompt}]
+      )
+      generated_title = completion.choices[0].message.content
+    elif vendor == "anthropic":
+      completion = client.messages.create(
+        model="claude-3-haiku-20240307",
+        max_tokens=20,
+        messages = [{"role": "user", "content": prompt}]
+      )
+      generated_title = completion.content[0].text
+    
+    chars_to_strip = ' .!?\'"'
+    generated_title = f"{generated_title.strip(chars_to_strip)} [{model}]"
+    with open(os.path.join(chat_dir, "title.txt"), "w") as f:
+      f.write(generated_title)
+
 
   return chat_dir
 
@@ -37,7 +66,7 @@ def save_system_prompt(chat_dir, system_prompt: str):
   # need this for anthropic client, bc sys_prompt cannot be part of conversation json 'messages'
   # so when loading previous claude chat, sys_prompt needs to be loaded from disk instead
   with open(os.path.join(chat_dir, "system.txt"), "w") as f:
-    f.write(system_prompt)
+    f.write(system_prompt.strip())
 
 def load_system_prompt(chat_dir):
   with open(os.path.join(chat_dir, "system.txt"), "r") as f:
@@ -99,32 +128,38 @@ def sel_chat():
     lines = 4
 
     for i, chat in enumerate(displayed_chats, 1):
-      print(f"{i}. {chat.name}")
+      title_file = os.path.join(chat, 'title.txt')
+      if os.path.exists(title_file):
+        with open(title_file, 'r') as file:
+          print(f"{i}. {file.read().strip()}")
+      else:
+        print(f"{i}. {chat.name}")
       lines += 1
 
     if current_page + 1 < max_page:
-      prompt_str = f"(Showing {start + 1}-{start + len(displayed_chats)}, n for next page, p for previous page): "
+      prompt_str = f"(Showing {start + 1}-{start + len(displayed_chats)}: n for next page, p for previous): "
     else:
-      prompt_str = f"(Showing {start + 1}-{start + len(displayed_chats)}, p for previous page): "
+      prompt_str = f"(Showing {start + 1}-{start + len(displayed_chats)}: p for previous): "
     sys.stdout.write(prompt_str)
     sys.stdout.flush()
-    lines += 1
 
-    try: 
-      choice = input().strip().lower()
-    except KeyboardInterrupt: 
-      # clear ^C and greyout prompt
+    choice = getch().lower()
+
+    if choice == '\n' or choice == '\r':
+      print()
+      return None
+    elif choice == 'q' or choice == '\x03': #ctrl-c
       sys.stdout.write("\r\033[K\033[90m" + prompt_str + "\033[0m\n")
       sys.stdout.flush()
+      print()
       sys.exit()
-
-    if choice == '':
-      return None
-    if choice == 'n' and current_page + 1 < max_page:
+    elif choice == 'n' and current_page + 1 < max_page:
       current_page += 1
     elif choice == 'p' and current_page > 0:
       current_page -= 1
     elif choice.isdigit() and int(choice) > 0 and int(choice) <= len(displayed_chats):
+      print()
       return chat_dirs[start + int(choice) - 1]
     elif choice == '0':
+      print()
       return None

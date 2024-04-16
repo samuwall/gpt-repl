@@ -13,6 +13,8 @@ def getch():
     try:
       tty.setraw(sys.stdin.fileno())
       ch = sys.stdin.read(1)
+    except KeyboardInterrupt:
+      ch = '\x03'
     finally:
       termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
