@@ -124,7 +124,7 @@ def sel_chat():
     clear_lines(lines)
 
     print(f"\n\rSelect chat: (0-{page_size}, default: 0)")
-    print("\n0. New Chat")
+    print("\n\x1b[96m\x1b[1m0. New Chat\x1b[0m")
     lines = 4
 
     for i, chat in enumerate(displayed_chats, 1):
@@ -135,6 +135,9 @@ def sel_chat():
       else:
         print(f"{i}. {chat.name}")
       lines += 1
+    
+    print()
+    lines += 1
 
     if current_page + 1 < max_page:
       prompt_str = f"(Showing {start + 1}-{start + len(displayed_chats)}: n for next page, p for previous): "
@@ -146,7 +149,7 @@ def sel_chat():
     choice = getch().lower()
 
     if choice == '\n' or choice == '\r':
-      print()
+      clear_lines(lines)
       return None
     elif choice == 'q' or choice == '\x03': #ctrl-c
       sys.stdout.write("\r\033[K\033[90m" + prompt_str + "\033[0m\n")
@@ -158,8 +161,8 @@ def sel_chat():
     elif choice == 'p' and current_page > 0:
       current_page -= 1
     elif choice.isdigit() and int(choice) > 0 and int(choice) <= len(displayed_chats):
-      print()
+      clear_lines(lines)
       return chat_dirs[start + int(choice) - 1]
     elif choice == '0':
-      print()
+      clear_lines(lines)
       return None
