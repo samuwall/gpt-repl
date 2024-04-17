@@ -128,7 +128,7 @@ def main():
 
     print_chat(selected_chat, renderer, color)
 
-
+  assistant_response = ""
   prev_input = ""
 
   while 1:
