@@ -7,17 +7,15 @@ class CodeBlockManager:
 
   def parse(self, markdown_str: str):
     self.code_blocks.clear()  # Clear the previous code block list
-    self.code_blocks = re.findall(r'```.*?\n(.*?)```', markdown_str, re.DOTALL) # breaks when code includes ```
-    # could also parse line by line, and check if line starts with ```, if already in code block, end code block, if not, start code block
-    # that would fix the problem with code that contains ```, since it checks at the START of the line
+    self.code_blocks = re.findall(r'```.*?\n(.*?)```', markdown_str, re.DOTALL)
 
   def copy_code_block(self, code_block_index: int):
     if 1 <= code_block_index <= len(self.code_blocks):
       code_block = self.code_blocks[code_block_index - 1]
       try:
         pyperclip.copy(code_block)
+        print(f"Code block {code_block_index} copied to clipboard")
       except Exception as e:
-        print(f"failed to copy text to system clipboard: {e}")
-      print(f"Code block {code_block_index} copied to clipboard")
+        print(e)
     else:
       print(f"Invalid code block index. Please enter a number between 1 and {len(self.code_blocks)}.")
