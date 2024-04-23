@@ -2,9 +2,8 @@ import sys
 import os
 import json
 from datetime import datetime
-from pathlib import Path
-from .render import render, print_rule
-from .input import getch
+from gpt_repl.render import render, print_rule
+from gpt_repl.input import getch
 
 def clear_lines(num_lines: int):
   if num_lines > 0:
@@ -13,23 +12,24 @@ def clear_lines(num_lines: int):
     sys.stdout.flush()
 
 def mkdir_new_chat(model: str, ai_gen_chat_titles: str, user_input: str, assistant_response: str, vendor: str, client):
-  # Create chats directory if it doesn't exist
-  chats = Path(__file__).resolve().parent.parent / "chats"
-  chats.mkdir(exist_ok=True)
+  
+  # create chats directory if it doesn't exist
+  chats = os.path.join(os.path.expanduser('~'), '.gpt-repl', 'chats')
+  if not os.path.exists(chats):
+    os.makedirs(chats)
 
-  # Create new chat directory with timestamp
+  # create new chat directory with timestamp
   timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-  chat_dir = chats / f"{timestamp}_{model}"
-  chat_dir.mkdir()
+  chat_dir = os.path.join(chats, f"{timestamp}_{model}")
+  os.makedirs(chat_dir)
 
-  # Initialize empty messages.json file
-  messages_path = chat_dir / "messages.json"
-  with open(messages_path, "w") as f:
-    json.dump([], f)
+  # initialize empty messages.json file
+  with open(os.path.join(chat_dir, 'messages.json'), "w") as f:
+    json.dump([],f)
 
-  # Initialize empty chat.md file
-  chat_path = chat_dir / "chat.md"
-  open(chat_path, "w").close()
+  # initialize empty chat.md file
+  open(os.path.join(chat_dir, 'chat.md'), "w").close()
+
   
   if ai_gen_chat_titles.lower() == "true":
     # generate chat title using cheap llm
@@ -54,7 +54,10 @@ def mkdir_new_chat(model: str, ai_gen_chat_titles: str, user_input: str, assista
       )
       generated_title = completion.content[0].text
     
-    chars_to_strip = ' .!?\'"'
+    # sanitizing odd responses
+    generated_title = generated_title[:40]
+    generated_title = generated_title.replace('\t', ' ').replace('\n', ' ')
+    chars_to_strip = ' .!?\t\n\'"'
     generated_title = f"{generated_title.strip(chars_to_strip)} [{model}]"
     with open(os.path.join(chat_dir, "title.txt"), "w") as f:
       f.write(generated_title)
@@ -90,10 +93,11 @@ def save_chat(chat_dir, messages, user_input: str, assistant_response: str):
 
 def list_of_chat_paths():
    # create chats directory if it doesn't exist
-  chats = Path(__file__).resolve().parent.parent / "chats"
-  chats.mkdir(exist_ok=True)
+  chats = os.path.join(os.path.expanduser('~'), '.gpt-repl', 'chats')
+  if not os.path.exists(chats):
+    os.makedirs(chats)
 
-  chat_paths = sorted(chats.iterdir(), reverse=True)
+  chat_paths = sorted([os.path.join(chats, file) for file in os.listdir(chats)], reverse=True)
   return chat_paths
 
 def load_chat(chat_dir):
@@ -103,7 +107,7 @@ def load_chat(chat_dir):
   return messages
 
 def print_chat(chat_dir, renderer: str, color: str):
-  print(f"\n\x1b[1m{chat_dir.name}:\x1b[0m \x1b[96m'q' to quit '-h' for help\x1b[0m")
+  print(f"\n\x1b[1m{os.path.basename(chat_dir)}:\x1b[0m \x1b[96m'q' to quit '-h' for help\x1b[0m")
   print_rule(color)
 
   with open(os.path.join(chat_dir, "chat.md"), "r") as f:
@@ -133,7 +137,7 @@ def sel_chat():
         with open(title_file, 'r') as file:
           print(f"{i}. {file.read().strip()}")
       else:
-        print(f"{i}. {chat.name}")
+        print(f"{i}. {os.path.basename(chat)}")
       lines += 1
     
     print()

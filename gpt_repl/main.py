@@ -18,42 +18,21 @@ Note: Requires valid API keys for OpenAI and Anthropic to be set as environment 
 """
 
 import sys
-import os
-import subprocess
 import re
 import argparse
-from pathlib import Path
-from configparser import ConfigParser
 from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 
-from .spinner import Spinner
-from .code_clipboard import CodeBlockManager
-from .help import help_runtime
-from .render import print_rule, render, color_codes
-from .chat import sel_chat, mkdir_new_chat, load_chat, print_chat, save_chat, save_system_prompt, load_system_prompt, remove_system_message
-from .input import getch
+from gpt_repl.config import get_config_path, open_conf_file, load_config
+from gpt_repl.spinner import Spinner
+from gpt_repl.code_clipboard import CodeBlockManager
+from gpt_repl.help import help_runtime
+from gpt_repl.render import print_rule, render, color_codes
+from gpt_repl.chat import sel_chat, mkdir_new_chat, load_chat, print_chat, save_chat, save_system_prompt, load_system_prompt, remove_system_message
+from gpt_repl.input import getch
 
 # from rich.traceback import install
 # install()
-
-
-def get_config_path(filename: str):
-  return str(Path(__file__).resolve().parent.parent / filename)
-
-# load .conf file settings using ConfigParser object
-## return reference to populated ConfigParser object
-def load_config(path: str):
-  config = ConfigParser()
-  config.read(path)
-  return config
-
-def open_conf_file(path: str):
-  editor = os.environ.get("EDITOR", "nano")
-  try:
-    subprocess.run([editor, path])
-  except subprocess.CalledProcessError as err:
-    print(f"Failed to open the configuration file: {err}")
 
 
 def main():

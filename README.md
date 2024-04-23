@@ -10,6 +10,7 @@ Features:
 - Load settings from a configuration file (gpt.conf)
 - Chat with both OpenAI and Anthropic models
 - Create new chats or load previous chats
+- Multi-line inputs
 - Render assistant responses using different rendering options (raw, lite, rich)
 - Custom markdown renderer (lite)
 - Copy code blocks to your clipboard
@@ -22,13 +23,6 @@ Note: Requires valid API keys for OpenAI and Anthropic to be set as environment 
 
 Setup:
 - `cd /path/to/gpt-repl`
-- `python -m venv venv` create virtual environment 
-- `source venv/bin/activate` activate it 
-- `pip install -r requirements.txt`
-- `pip install -e .` (must be editable, -e)
-- `deactivate`
-- in `.bashrc`, add the line `export PATH="/path/to/gpt-repl/venv/bin:$PATH"`
-- restart terminal (or `source ~/.bashrc`)
-- `gpt --help`
+- 
 
 Now you can enter the `gpt` command in any terminal and use gpt-repl. 

@@ -1,3 +1,43 @@
+import os
+import sys
+import subprocess
+from configparser import ConfigParser
+
+def get_config_path(filename: str):
+  config_dir = os.path.join(os.path.expanduser('~'), '.gpt-repl')
+
+  if not os.path.exists(config_dir):
+    os.makedirs(config_dir)
+
+  config_path = os.path.join(config_dir, filename)
+
+  # if gpt.conf not already there, write default config to it
+  if not os.path.exists(config_path):
+    with open(config_path, 'w') as f:
+      f.write(conf_str)
+
+  return config_path
+
+
+def load_config(path: str):
+
+  if not os.path.exists(path):
+    print("config file not found")
+    sys.exit(1)
+
+  config = ConfigParser()
+  config.read(path)
+  return config
+
+def open_conf_file(path: str):
+  editor = os.environ.get("EDITOR", "nano")
+  try:
+    subprocess.run([editor, path])
+  except subprocess.CalledProcessError as err:
+    print(f"Failed to open the configuration file: {err}")
+
+
+conf_str = """
 [settings]
 
 # settings:
@@ -63,3 +103,5 @@ ai_gen_chat_titles = true
 # try to select the cheapest available model for each vendor
 #openai_chat_title_gen_model = gpt-3.5-turbo
 #anthropic_chat_title_gen_model = claude-3-haiku
+
+"""

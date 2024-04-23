@@ -14,7 +14,10 @@ class CodeBlockManager:
   def copy_code_block(self, code_block_index: int):
     if 1 <= code_block_index <= len(self.code_blocks):
       code_block = self.code_blocks[code_block_index - 1]
-      pyperclip.copy(code_block)
+      try:
+        pyperclip.copy(code_block)
+      except Exception as e:
+        print(f"failed to copy text to system clipboard: {e}")
       print(f"Code block {code_block_index} copied to clipboard")
     else:
       print(f"Invalid code block index. Please enter a number between 1 and {len(self.code_blocks)}.")
