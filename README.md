@@ -22,7 +22,9 @@ To run the script, execute it from the command line. Use the '--config' flag to 
 Note: Requires valid API keys for OpenAI and Anthropic to be set as environment variables.
 
 Setup:
-- `cd /path/to/gpt-repl`
-- 
+- `git clone`
+- `cd path/to/gpt-repl`
+- `pipx install .`
+- `gpt --help`
 
 Now you can enter the `gpt` command in any terminal and use gpt-repl. 
