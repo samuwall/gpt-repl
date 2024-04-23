@@ -19,7 +19,7 @@ Features:
 
 To run the script, execute it from the command line. Use the '--config' flag to open the configuration file for editing. Press 'q' or 'quit' to exit the chat, and use '-h' or '--help' to display runtime help.
 
-Note: Requires valid API keys for OpenAI and Anthropic to be set as environment variables.
+Note: Requires valid OpenAI/Anthropic API keys to be set as `environment variables`.
 
 Setup:
 - `git clone`
