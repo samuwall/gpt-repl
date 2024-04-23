@@ -7,7 +7,7 @@ class CodeBlockManager:
 
   def parse(self, markdown_str: str):
     self.code_blocks.clear()  # Clear the previous code block list
-    self.code_blocks = re.findall(r'```.*?\n(.*?)```', markdown_str, re.DOTALL)
+    self.code_blocks = re.findall(r'^\s*```.*?\n(.*?)\n\s*```\s*$', markdown_str, re.DOTALL | re.MULTILINE)
 
   def copy_code_block(self, code_block_index: int):
     if 1 <= code_block_index <= len(self.code_blocks):
