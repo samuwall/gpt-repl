@@ -1,7 +1,7 @@
 import os
 import re
-import textwrap
-import ansiwrap
+#import textwrap
+import ansiwrap_hotoffthehamster # original ansiwrap does not work with 3.12
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name, TextLexer
 from pygments.formatters import Terminal256Formatter
@@ -98,7 +98,7 @@ def md2ansi(md: str):
         line = line.replace('1NL1NECODE', f"\x1b[1;36m{snippet}\x1b[0m", 1)
 
       try:
-        wrapped_text = ansiwrap.fill(line, width=width, replace_whitespace=True, drop_whitespace=True, break_on_hyphens=False)
+        wrapped_text = ansiwrap_hotoffthehamster.fill(line, width=width, replace_whitespace=True, drop_whitespace=True, break_on_hyphens=False)
         output.append(wrapped_text)
       except Exception as e:
         print(f"Error wrapping text: {str(e)}")
