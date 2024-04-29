@@ -2,14 +2,9 @@ import sys
 import os
 import json
 from datetime import datetime
-from gpt_repl.render import render, print_rule
+from gpt_repl.render import render, print_rule, clear_lines
 from gpt_repl.input import getch
 
-def clear_lines(num_lines: int):
-  if num_lines > 0:
-    sys.stdout.write(f"\x1b[{num_lines}A")    # move cursor up num_lines
-    sys.stdout.write("\r\x1b[0J")             # clear from cursor to end of screen
-    sys.stdout.flush()
 
 def mkdir_new_chat(model: str, ai_gen_chat_titles: str, user_input: str, assistant_response: str, vendor: str, client):
   
@@ -59,6 +54,7 @@ def mkdir_new_chat(model: str, ai_gen_chat_titles: str, user_input: str, assista
     generated_title = generated_title.replace('\t', ' ').replace('\n', ' ')
     chars_to_strip = ' .!?\t\n\'"'
     generated_title = f"{generated_title.strip(chars_to_strip)} [{model}]"
+
     with open(os.path.join(chat_dir, "title.txt"), "w") as f:
       f.write(generated_title)
 

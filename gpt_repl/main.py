@@ -113,9 +113,13 @@ def main():
   while 1:
     
     try:
+      # save cursor position (for rewriting input)
+      sys.stdout.write("\x1b[s")
+      sys.stdout.flush()
+
       #-- get user input
       user_input = prompt(": ", key_bindings=bindings, default=prev_input)
-      num_lines = user_input.count('\n') + 1
+
 
       #-- check if input is a command
       normalized_input = user_input.strip().lower()
@@ -147,17 +151,15 @@ def main():
       confirm = getch().lower()
 
       if confirm == 'y':
-        sys.stdout.write("\r\x1b[K") # carriage return, clear line
+        sys.stdout.write("\r\x1b[K")  # carriage return, clear confirmation line
         sys.stdout.flush()
         prev_input=""
 
       else:
-        # clear_lines(num_lines)                  # actually clearing the lines creates a flashing effect
-
-        sys.stdout.write(f"\r\x1b[{num_lines}A")  # just move up num_lines and let prev_input overwrite lines
-        sys.stdout.flush()                        # need \r so that input gets overwritten from the start
-        prev_input = user_input                   # they are the same size so nothing is left over
-        continue                                  # note: this depends on prompt() clearing the confirmation line
+        sys.stdout.write("\x1b[u")    # update current cursor position back to saved pos at beginning of prompt()
+        sys.stdout.flush()            # text gets overwritten by prev_input prompt and allows user to edit input before submitting
+        prev_input=user_input
+        continue
     
     #-- ctrl-c, quit program
     except KeyboardInterrupt:

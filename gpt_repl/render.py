@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 #import textwrap
 import ansiwrap_hotoffthehamster # original ansiwrap does not work with 3.12
 from pygments import highlight
@@ -40,8 +41,6 @@ def render(markdown_str: str, color: str, renderer: str):
     panel = Panel(md, border_style=color, padding=(1,2), expand=False)
     console.print(panel)
     print(f"\n")
-
-
 
 
 def md2ansi(md: str):
@@ -115,3 +114,9 @@ def print_rule(color: str):
   rule = "─" * os.get_terminal_size().columns
   colored_rule = color_codes[color] + rule + color_codes["reset"]
   print(colored_rule)
+
+def clear_lines(num_lines: int):
+  if num_lines > 0:
+    sys.stdout.write(f"\x1b[{num_lines}A")    # move cursor up num_lines
+    sys.stdout.write("\r\x1b[0J")             # clear from cursor to end of screen
+    sys.stdout.flush()
