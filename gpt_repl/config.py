@@ -48,10 +48,7 @@ conf_str = """
 #   ai_gen_chat_titles
 
 # INITIAL SYSTEM PROMPT (only applies to new chats):
-#system-prompt = You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture. Image input capabilities: Disabled. Tools: None.
 system-prompt = You are a helpful assistant.
-#system-prompt = You are an expert programmer.
-
 
 # GPT MODEL:
 # uncomment the model you would like to use, or add a new one (chat models only)
@@ -59,15 +56,6 @@ system-prompt = You are a helpful assistant.
 
 # Dec. 2023 (currently points to gpt-4-turbo-2024-04-09
 model = gpt-4-turbo
-
-# Dec. 2023 (currently points to gpt-4-0125-preview)
-#model = gpt-4-turbo-preview
-
-# Apr. 2023
-#model = gpt-4-1106-preview
-
-# Sep. 2021 (currently points to gpt-4-0613)
-#model = gpt-4
 
 # Sep. 2021 (less expensive, faster)
 #model = gpt-3.5-turbo-0125
@@ -99,9 +87,5 @@ always_new_chat = false
 # ENABLE/DISABLE AI GENERATED SAVED CHAT TITLES:
 ai_gen_chat_titles = true
 
-# AI CHAT TITLE GENERATION MODELS:
-# try to select the cheapest available model for each vendor
-#openai_chat_title_gen_model = gpt-3.5-turbo
-#anthropic_chat_title_gen_model = claude-3-haiku
 
 """
