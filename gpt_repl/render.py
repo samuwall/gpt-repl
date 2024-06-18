@@ -87,7 +87,6 @@ def md2ansi(md: str):
       line = re.sub(r'`(.*?)`', '1NL1NECODE', line)
       
       line = re.sub(r'(\*\*|__)(.*?)\1', lambda m: f"\x1b[1m{m.group(2)}\x1b[0m", line)   # bold
-      line = re.sub(r'(\*|_)(.*?)\1', lambda m: f"\x1b[3m{m.group(2)}\x1b[0m", line)      # italic
       line = re.sub(r'^(#{1,6})\s*(.*)', lambda m: f"\x1b[1;35m{' ' * len(m.group(1))} {m.group(2)}\x1b[0m", line)  # headers in magenta
       line = re.sub(r'^\s*([\*\-\+])\s+(.*)', lambda m: f"  \x1b[93m•\x1b[0m {m.group(2)}", line)        # unordered lists
       line = re.sub(r'^(\d+\.)\s+(.*)', lambda m: f" \x1b[93m{m.group(1)}\x1b[0m {m.group(2)}", line)   # ordered lists
