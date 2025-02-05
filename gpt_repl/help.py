@@ -1,6 +1,11 @@
+#################################################
+## file         : help.py
+## description  : 
+##
+#################################################
 
 runtime_help_str = """
-  Welcome to gpt-repl, a terminal-based gpt chat-bot!
+Welcome to gpt-repl, a terminal-based gpt chat-bot!
 
 ### Available Runtime Commands
 

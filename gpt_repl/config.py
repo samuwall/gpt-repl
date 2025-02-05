@@ -1,3 +1,9 @@
+#################################################
+## file         : config.py
+## description  : 
+##
+#################################################
+
 import os
 import sys
 import subprocess
@@ -48,37 +54,22 @@ conf_str = """
 #   ai_gen_chat_titles
 
 # INITIAL SYSTEM PROMPT (only applies to new chats):
+#system-prompt = You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture. Image input capabilities: Disabled. Tools: None.
 system-prompt = You are a helpful assistant.
+#system-prompt = You are Lebron James. You will respond only in the style of a Lebron James Instagram caption, complete with catchphrases and an overuse of emojis.
 
 # GPT MODEL:
 # uncomment the model you would like to use, or add a new one (chat models only)
-#-- openai models ( https://platform.openai.com/docs/models/overview )
+# model = <provider_name>/<model_name>
 
-# Dec. 2023 (currently points to gpt-4-turbo-2024-04-09
-model = gpt-4-turbo
-
-# Sep. 2021 (less expensive, faster)
-#model = gpt-3.5-turbo-0125
-
-#model = etc...
-
-#-- anthropic models ( https://docs.anthropic.com/claude/docs/models-overview )
-
-# Feb. 2024
-#model = claude-3-opus-20240229
-
-# Feb. 2024
-#model = claude-3-sonnet-20240229
-
-# Mar. 2024
-#model = claude-3-haiku-20240307
-
+model = openai/gpt-4o-mini
+#model = openai/o1-mini
+#model = anthropic/claude-3-5-haiku-latest
 
 # DEFAULT TEXT RENDERER:
 #renderer = rich
 renderer = lite
 #renderer = raw
-
 
 # ALWAYS CREATE A NEW CHAT WITHOUT ASKING TO SELECT FROM PREV CHATS?:
 # true or false
@@ -86,6 +77,11 @@ always_new_chat = false
 
 # ENABLE/DISABLE AI GENERATED SAVED CHAT TITLES:
 ai_gen_chat_titles = true
+
+# AI CHAT TITLE GENERATION MODEL:
+# select a cheap and fast model
+#chat_title_gen_model = openai/gpt4o
+
 
 
 """

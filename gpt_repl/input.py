@@ -1,5 +1,14 @@
+#################################################
+## file         : input.py
+## description  : 
+##
+#################################################
+
 import os
 import sys
+import re
+from prompt_toolkit import prompt
+from prompt_toolkit.key_binding import KeyBindings
 
 def getch():
   if os.name == "nt":
@@ -19,3 +28,36 @@ def getch():
       termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
   
+def get_user_input(prev_input, bindings):
+    sys.stdout.write("\x1b[s")
+    sys.stdout.flush()
+
+    user_input = prompt(": ", key_bindings=bindings, default=prev_input).strip()
+    normalized_input = user_input.lower()
+
+    if normalized_input in ["q", "quit"]:
+        return ('quit', None)
+    elif normalized_input in ["-h", "--h", "--help"]:
+        return ('help', None)
+    elif re.match(r"^--?c \d+$", normalized_input):
+        id = int(normalized_input.split()[1])
+        return ('copy_code', id)
+    elif re.match(r"^--?p\s+raw$", normalized_input):
+        return ('render', 'raw')
+    elif re.match(r"^--?p\s+lite$", normalized_input):
+        return ('render', 'lite')
+    elif re.match(r"^--?p\s+rich$", normalized_input):
+        return ('render', 'rich')
+    elif re.match(r"^--?[a-z]$", normalized_input) or re.match(r"^--?.\s", normalized_input):
+        return ('invalid_command', None)
+    else:
+        print("\rAre you sure you want to submit? \x1b[96m[y/n]\x1b[0m", end='')
+        confirm = getch().lower()
+        if confirm == 'y':
+            sys.stdout.write("\r\x1b[K")
+            sys.stdout.flush()
+            return ('input', user_input)
+        else:
+            sys.stdout.write("\x1b[u")
+            sys.stdout.flush()
+            return ('cancel', user_input)

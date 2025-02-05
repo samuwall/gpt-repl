@@ -1,16 +1,20 @@
+#################################################
+## file         : main.py
+## description  : 
+##
+#################################################
+
 import sys
-import re
 import argparse
 from litellm import completion
-from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 from gpt_repl.config import get_config_path, open_conf_file, load_config
 from gpt_repl.spinner import Spinner
 from gpt_repl.code_clipboard import CodeBlockManager
 from gpt_repl.help import help_runtime
-from gpt_repl.render import print_rule, render, color_codes
+from gpt_repl.render import print_rule, render, color_codes, provider_color_table
 from gpt_repl.chat import sel_chat, mkdir_new_chat, load_chat, print_chat, save_chat
-from gpt_repl.input import getch
+from gpt_repl.input import get_user_input
 
 def main():
 
@@ -52,7 +56,11 @@ def main():
 
     ### assign color ############################
 
-    color = "white"
+    provider = model.split('/')[0]
+    if provider not in provider_color_table:
+        color = "green"
+    else:
+        color = provider_color_table[provider]
 
     ### select chat #############################
 
@@ -74,70 +82,45 @@ def main():
     ### MAIN REPL LOOP ##########################
 
     while 1:
-        
-        ### get prompt/command ##################
+
+        ### get user prompt/command #############
 
         try:
-            
-            # save cursor position (for rewriting input)
-            sys.stdout.write("\x1b[s")
-            sys.stdout.flush()
-
-            # get user input
-            user_input = prompt(": ", key_bindings=bindings, default=prev_input)
-
-            # check if input is a command
-            normalized_input = user_input.strip().lower()
-            if normalized_input in ["q", "quit"]:
-                break
-            elif normalized_input in ["-h", "--h", "--help"]:
-                help_runtime()
-                continue
-            elif re.match(r"^--?c \d+$", normalized_input):
-                id = int(normalized_input.split()[1])
-                code_block_manager.copy_code_block(id) # e.g., -c 2 or --c 2
-                print()
-                continue
-            elif re.match(r"^--?p\s+raw$", normalized_input): 
-                render(response, color, "raw")
-                continue
-            elif re.match(r"^--?p\s+lite$", normalized_input):
-                render(response, color, "lite")
-                continue
-            elif re.match(r"^--?p\s+rich$", normalized_input):
-                render(response, color, "rich")
-                continue
-            elif re.match(r"^--?[a-z]$", normalized_input) or re.match(r"^--?.\s", normalized_input):
-                print(f"invalid command\n") # likely command attempt
-                continue
-
-            # valid prompt, confirm submission
-            print("\rAre you sure you want to submit? \x1b[96m[y/n]\x1b[0m", end='')
-            confirm = getch().lower()
-
-            if confirm == 'y':
-                sys.stdout.write("\r\x1b[K")  # clear confirmation msg
-                sys.stdout.flush()
-                prev_input=""
-
-            else:
-                sys.stdout.write("\x1b[u")  # update cursor back to pos before any user inputs
-                sys.stdout.flush()
-                prev_input=user_input       # save this input for further modification
-                continue
-            
-        # ctrl-c
+            action, data = get_user_input(prev_input, bindings)
         except KeyboardInterrupt:
             break
 
+        if action == 'quit':
+            break
+        elif action == 'help':
+            help_runtime()
+            continue
+        elif action == 'copy_code':
+            code_block_manager.copy_code_block(data)
+            print()
+            continue
+        elif action == 'render':
+            render(response, color, data)
+            continue
+        elif action == 'invalid_command':
+            print("invalid command\n")
+            continue
+        elif action == 'input':
+            user_input = data
+            prev_input = ""
+        elif action == 'cancel':
+            prev_input = data
+            continue
+        else:
+            continue
 
         ### send prompt to API ##################
 
         spinner.start()
 
         messages.append({"role": "user", "content": user_input})
-        response = completion(model=model, messages=messages)
-        response = response.choices[0].message.content
+        response_obj = completion(model=model, messages=messages)
+        response = response_obj.choices[0].message.content
         messages.append({"role": "assistant", "content": response})
 
         if is_new_chat:
@@ -154,4 +137,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
