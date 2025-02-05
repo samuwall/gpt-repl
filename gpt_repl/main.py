@@ -6,16 +6,21 @@
 
 import sys
 import argparse
+import threading
+import importlib
 from prompt_toolkit.key_binding import KeyBindings
 from gpt_repl.config import get_config_path, open_conf_file, load_config
 from gpt_repl.spinner import Spinner
-from gpt_repl.code_clipboard import CodeBlockManager
+from gpt_repl.code_clipboard import copy_code_block
 from gpt_repl.help import help_runtime
 from gpt_repl.render import print_rule, render, color_codes, provider_color_table
 from gpt_repl.chat import sel_chat, mkdir_new_chat, load_chat, print_chat, save_chat
 from gpt_repl.input import get_user_input
 
 def main():
+
+    load_thread = threading.Thread(target=importlib.import_module, args=("litellm",))
+    load_thread.start()
 
     messages = []
     response = ""
@@ -35,8 +40,6 @@ def main():
     ### initialize classes ######################
 
     spinner = Spinner(message="")
-    code_block_manager = CodeBlockManager()
-
     bindings = KeyBindings()
     @bindings.add("c-n")
     def _(event):
@@ -95,8 +98,7 @@ def main():
             help_runtime()
             continue
         elif action == 'copy_code':
-            code_block_manager.copy_code_block(data)
-            print()
+            copy_code_block(response, data)
             continue
         elif action == 'render':
             render(response, color, data)
@@ -116,6 +118,7 @@ def main():
         ### send prompt to API ##################
 
         spinner.start()
+        load_thread.join()
         from litellm import completion
 
         messages.append({"role": "user", "content": user_input})
@@ -127,7 +130,6 @@ def main():
             selected_chat = mkdir_new_chat(model, title_gen_model, user_input, response)
             is_new_chat = False
 
-        code_block_manager.parse(response)
         response = f"\x1b[1m{color_codes[color]}{model}:\x1b[0m {response}"
         save_chat(selected_chat, messages, user_input, response)
 

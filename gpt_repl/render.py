@@ -44,9 +44,8 @@ def render(markdown_str: str, color: str, renderer: str):
         print()
 
     elif renderer == "lite":
-        print(f"\n{md2ansi(markdown_str)}\n")
+        print(f"\n{md2ansi(markdown_str)}")
         print_rule(color)
-        #print()
 
     else:
         from rich.console import Console
@@ -56,7 +55,7 @@ def render(markdown_str: str, color: str, renderer: str):
         md = Markdown(markdown_str)
         panel = Panel(md, border_style=color, padding=(1,2), expand=False)
         console.print(panel)
-        print(f"\n")
+        print()
 
 
 def md2ansi(md: str):
