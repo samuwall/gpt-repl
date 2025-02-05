@@ -1,6 +1,6 @@
 #################################################
 ## file         : input.py
-## description  : 
+## description  :
 ##
 #################################################
 
@@ -11,23 +11,23 @@ from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 
 def getch():
-  if os.name == "nt":
-    import msvcrt
-    return msvcrt.getch().decode("utf-8")
-  else:
-    import tty
-    import termios
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-      tty.setraw(sys.stdin.fileno())
-      ch = sys.stdin.read(1)
-    except KeyboardInterrupt:
-      ch = '\x03'
-    finally:
-      termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return ch
-  
+    if os.name == "nt":
+        import msvcrt
+        return msvcrt.getch().decode("utf-8")
+    else:
+        import tty
+        import termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        except KeyboardInterrupt:
+            ch = '\x03'
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
 def get_user_input(prev_input, bindings):
     sys.stdout.write("\x1b[s")
     sys.stdout.flush()

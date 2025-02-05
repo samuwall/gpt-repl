@@ -1,6 +1,6 @@
 #################################################
 ## file         : help.py
-## description  : 
+## description  :
 ##
 #################################################
 
@@ -37,5 +37,5 @@ Welcome to gpt-repl, a terminal-based gpt chat-bot!
   """
 
 def help_runtime():
-  # print(md2ansi(runtime_help_str))
-  print(runtime_help_str)
+    # print(md2ansi(runtime_help_str))
+    print(runtime_help_str)

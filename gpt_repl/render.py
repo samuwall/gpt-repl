@@ -1,6 +1,6 @@
 #################################################
 ## file         : render.py
-## description  : 
+## description  :
 ##
 #################################################
 
@@ -10,7 +10,8 @@ import sys
 #import textwrap
 import ansiwrap_hotoffthehamster # original ansiwrap does not work with 3.12
 from pygments import highlight
-from pygments.lexers import get_lexer_by_name, TextLexer
+from pygments.lexers import get_lexer_by_name
+from pygments.lexers.special import TextLexer
 from pygments.formatters import Terminal256Formatter
 from pygments.styles import get_style_by_name
 
