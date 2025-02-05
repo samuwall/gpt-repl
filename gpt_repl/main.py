@@ -1,12 +1,11 @@
 #################################################
 ## file         : main.py
-## description  : 
+## description  :
 ##
 #################################################
 
 import sys
 import argparse
-from litellm import completion
 from prompt_toolkit.key_binding import KeyBindings
 from gpt_repl.config import get_config_path, open_conf_file, load_config
 from gpt_repl.spinner import Spinner
@@ -52,7 +51,7 @@ def main():
     model = config['settings']['model']
     renderer = config['settings']['renderer']
     always_new_chat = config['settings']['always_new_chat']
-    ai_gen_chat_titles = config['settings']['ai_gen_chat_titles']
+    title_gen_model = config['settings']['title_gen_model']
 
     ### assign color ############################
 
@@ -68,7 +67,7 @@ def main():
 
     if always_new_chat.lower() == 'true':
         selected_chat = None
-    else: 
+    else:
         selected_chat = sel_chat()
 
     if selected_chat:
@@ -117,6 +116,7 @@ def main():
         ### send prompt to API ##################
 
         spinner.start()
+        from litellm import completion
 
         messages.append({"role": "user", "content": user_input})
         response_obj = completion(model=model, messages=messages)
@@ -124,14 +124,14 @@ def main():
         messages.append({"role": "assistant", "content": response})
 
         if is_new_chat:
-            selected_chat = mkdir_new_chat(model, ai_gen_chat_titles, user_input, response)
+            selected_chat = mkdir_new_chat(model, title_gen_model, user_input, response)
             is_new_chat = False
 
         code_block_manager.parse(response)
         response = f"\x1b[1m{color_codes[color]}{model}:\x1b[0m {response}"
         save_chat(selected_chat, messages, user_input, response)
-        spinner.stop()
 
+        spinner.stop()
         render(response, color, renderer)
 
 
