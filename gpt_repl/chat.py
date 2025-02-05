@@ -15,6 +15,7 @@ def mkdir_new_chat(model: str, title_gen_model: str, user_input: str, assistant_
 
     # replace `/` with `_` so model can be used as a dir name
     model_dir = model.replace('/', '_')
+    model_name = model.split('/')[1]
 
     # create chats directory if it doesn't exist
     chats = os.path.join(os.path.expanduser('~'), '.gpt-repl', 'chats')
@@ -39,17 +40,17 @@ def mkdir_new_chat(model: str, title_gen_model: str, user_input: str, assistant_
 
         generated_title = ""
         chat_str = f"User: {user_input[:1000]}\nAssistant: {assistant_response[:1000]}"
-        task = "Using a maximum of 4 words, generate a title which captures the main subject of the following trimmed conversation between User and Assistant: "
+        task = "Using a maximum of 4 words, generate a title which captures the main subject of the following trimmed conversation between User and Assistant. Return only the title, nothing else."
         prompt = f"{task}\n{chat_str}"
 
         response = completion(model=title_gen_model, messages=[{"role": "user", "content": prompt}], max_tokens=20)
         generated_title = response.choices[0].message.content
 
         # sanitize odd responses
-        generated_title = generated_title[:40]
+        generated_title = generated_title[:30]
         generated_title = generated_title.replace('\t', ' ').replace('\n', ' ')
         chars_to_strip = ' .!?\t\n\'"'
-        generated_title = f"{generated_title.strip(chars_to_strip)} [{model}]"
+        generated_title = f"{generated_title.strip(chars_to_strip)} [{model_name}]"
 
         # write title
         with open(os.path.join(chat_dir, "title.txt"), "w") as f:
