@@ -1,65 +1,55 @@
 import sys
 import os
 import json
+from litellm import completion
 from datetime import datetime
 from gpt_repl.render import render, print_rule, clear_lines
 from gpt_repl.input import getch
 
 
-def mkdir_new_chat(model: str, ai_gen_chat_titles: str, user_input: str, assistant_response: str, vendor: str, client):
-  
-  # create chats directory if it doesn't exist
-  chats = os.path.join(os.path.expanduser('~'), '.gpt-repl', 'chats')
-  if not os.path.exists(chats):
-    os.makedirs(chats)
+def mkdir_new_chat(model: str, ai_gen_chat_titles: str, user_input: str, assistant_response: str):
 
-  # create new chat directory with timestamp
-  timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-  chat_dir = os.path.join(chats, f"{timestamp}_{model}")
-  os.makedirs(chat_dir)
+    # replace `/` with `_` so model can be used as a dir name
+    model_dir = model.replace('/', '_')
 
-  # initialize empty messages.json file
-  with open(os.path.join(chat_dir, 'messages.json'), "w") as f:
-    json.dump([],f)
+    # create chats directory if it doesn't exist
+    chats = os.path.join(os.path.expanduser('~'), '.gpt-repl', 'chats')
+    if not os.path.exists(chats):
+        os.makedirs(chats)
 
-  # initialize empty chat.md file
-  open(os.path.join(chat_dir, 'chat.md'), "w").close()
+    # create new chat directory with timestamp
+    timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+    chat_dir = os.path.join(chats, f"{timestamp}_{model_dir}")
+    os.makedirs(chat_dir)
 
-  
-  if ai_gen_chat_titles.lower() == "true":
-    # generate chat title using cheap llm
-    generated_title = ""
+    # initialize empty messages.json file
+    with open(os.path.join(chat_dir, 'messages.json'), "w") as f:
+        json.dump([],f)
 
-    chat_str = f"User: {user_input[:1000]}\nAssistant: {assistant_response[:1000]}"
-    task = "Using a maximum of 4 words, generate a title which captures the main subject of the following trimmed conversation between User and Assistant: "
-    prompt = f"{task}\n{chat_str}"
-
-    if vendor == "openai":
-      completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        max_tokens=20,
-        messages = [{"role": "user", "content": prompt}]
-      )
-      generated_title = completion.choices[0].message.content
-    elif vendor == "anthropic":
-      completion = client.messages.create(
-        model="claude-3-haiku-20240307",
-        max_tokens=20,
-        messages = [{"role": "user", "content": prompt}]
-      )
-      generated_title = completion.content[0].text
+    # initialize empty chat.md file
+    open(os.path.join(chat_dir, 'chat.md'), "w").close()
     
-    # sanitizing odd responses
-    generated_title = generated_title[:40]
-    generated_title = generated_title.replace('\t', ' ').replace('\n', ' ')
-    chars_to_strip = ' .!?\t\n\'"'
-    generated_title = f"{generated_title.strip(chars_to_strip)} [{model}]"
+    if ai_gen_chat_titles.lower() == "true":
 
-    with open(os.path.join(chat_dir, "title.txt"), "w") as f:
-      f.write(generated_title)
+        generated_title = ""
+        chat_str = f"User: {user_input[:1000]}\nAssistant: {assistant_response[:1000]}"
+        task = "Using a maximum of 4 words, generate a title which captures the main subject of the following trimmed conversation between User and Assistant: "
+        prompt = f"{task}\n{chat_str}"
 
+        response = completion(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}], max_tokens=20)
+        generated_title = response.choices[0].message.content
 
-  return chat_dir
+        # sanitize odd responses
+        generated_title = generated_title[:40]
+        generated_title = generated_title.replace('\t', ' ').replace('\n', ' ')
+        chars_to_strip = ' .!?\t\n\'"'
+        generated_title = f"{generated_title.strip(chars_to_strip)} [{model}]"
+
+        # write title
+        with open(os.path.join(chat_dir, "title.txt"), "w") as f:
+            f.write(generated_title)
+
+    return chat_dir
 
 def save_system_prompt(chat_dir, system_prompt: str):
   # need this for anthropic client, bc sys_prompt cannot be part of conversation json 'messages'
