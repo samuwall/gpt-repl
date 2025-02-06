@@ -19,7 +19,7 @@ from gpt_repl.input import get_user_input
 
 def main():
 
-    load_thread = threading.Thread(target=importlib.import_module, args=("litellm",))
+    load_thread = threading.Thread(target=importlib.import_module, args=("litellm",), daemon=True)
     load_thread.start()
 
     messages = []
