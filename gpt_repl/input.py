@@ -8,9 +8,9 @@ import os
 import sys
 import re
 from prompt_toolkit import prompt
-from prompt_toolkit.key_binding import KeyBindings
 
 def getch():
+
     if os.name == "nt":
         import msvcrt
         return msvcrt.getch().decode("utf-8")
@@ -28,7 +28,10 @@ def getch():
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
+
 def get_user_input(prev_input, bindings):
+
+    # save initial cursor pos for rewriting input
     sys.stdout.write("\x1b[s")
     sys.stdout.flush()
 
@@ -58,6 +61,7 @@ def get_user_input(prev_input, bindings):
             sys.stdout.flush()
             return ('input', user_input)
         else:
+            # update cursor pos to initial pos
             sys.stdout.write("\x1b[u")
             sys.stdout.flush()
             return ('cancel', user_input)

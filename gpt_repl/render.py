@@ -6,9 +6,7 @@
 
 import os
 import re
-import sys
-#import textwrap
-import ansiwrap_hotoffthehamster # original ansiwrap does not work with 3.12
+import ansiwrap_hotoffthehamster # stdlib textwrap does not recognize ansi esc codes, use ansiwrap
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.lexers.special import TextLexer
@@ -136,10 +134,3 @@ def print_rule(color: str):
     colored_rule = color_codes[color] + rule + color_codes["reset"]
     print(colored_rule)
 
-
-def clear_lines(num_lines: int):
-
-    if num_lines > 0:
-        sys.stdout.write(f"\x1b[{num_lines}A")    # move cursor up num_lines
-        sys.stdout.write("\r\x1b[0J")             # clear from cursor to end of screen
-        sys.stdout.flush()
