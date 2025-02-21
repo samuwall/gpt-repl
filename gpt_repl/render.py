@@ -4,8 +4,9 @@
 ##
 #################################################
 
-import os
+import sys
 import re
+import shutil
 import ansiwrap_hotoffthehamster # stdlib textwrap does not recognize ansi esc codes, use ansiwrap
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -32,6 +33,40 @@ provider_color_table = {
     "anthropic": "orange3",
     "gemini": "green"
 }
+
+def print_rule(color: str):
+
+    if color not in color_codes:
+        color = "green"  # default color if an invalid color is specified
+
+    rule = "─" * shutil.get_terminal_size().columns
+    colored_rule = color_codes[color] + rule + color_codes["reset"]
+    print(colored_rule)
+
+
+def count_lines(print_str: str):
+
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    print_str = ansi_escape.sub('', print_str)
+    
+    width = shutil.get_terminal_size().columns
+    total_rows = 0
+
+    for line in print_str.split('\n'):
+        if line:
+            implicit_rows = (len(line) + width - 1) // width
+            total_rows += implicit_rows
+        else:
+            total_rows += 1
+
+    return total_rows
+
+
+def clear_lines(num_lines: int):
+  if num_lines > 0:
+    sys.stdout.write(f"\x1b[{num_lines}A")  # move cursor up num_lines
+    sys.stdout.write("\r\x1b[J")            # clear from cursor to end of screen
+    sys.stdout.flush()
 
 
 def render(markdown_str: str, color: str, renderer: str):
@@ -60,8 +95,6 @@ def md2ansi(md: str):
 
     lines = md.split('\n')
     output = []
-    width = os.get_terminal_size().columns
-
     in_code_block = False
     code_block_language = None
     code_block_content = []
@@ -78,6 +111,7 @@ def md2ansi(md: str):
                     lexer = TextLexer()
                 try:
                     formatted_code = highlight('\n'.join(code_block_content), lexer, Terminal256Formatter(style=style))
+                    formatted_code = f"\x1b[48;5;235m{formatted_code}\x1b[0m"
                     output.append(formatted_code)
                 except Exception as e:
                     print(f"Error formatting code block: {str(e)}")
@@ -94,43 +128,30 @@ def md2ansi(md: str):
         if in_code_block:
             code_block_content.append(line)
         else:
+
             # process normal text
 
             # extract inline code, replace with placeholders
             code_snippets = re.findall(r'`(.*?)`', line)
             line = re.sub(r'`(.*?)`', '1NL1NECODE', line)
 
-            line = re.sub(r'(\*\*|__)(.*?)\1', lambda m: f"\x1b[1m{m.group(2)}\x1b[0m", line)   # bold
-            line = re.sub(r'^(#{1,6})\s*(.*)', lambda m: f"\x1b[1;35m{' ' * len(m.group(1))} {m.group(2)}\x1b[0m", line)  # headers in magenta
-            line = re.sub(r'^\s*([\*\-\+])\s+(.*)', lambda m: f"  \x1b[93m•\x1b[0m {m.group(2)}", line)        # unordered lists
-            line = re.sub(r'^(\d+\.)\s+(.*)', lambda m: f" \x1b[93m{m.group(1)}\x1b[0m {m.group(2)}", line)   # ordered lists
+            line = re.sub(r'(\*\*|__)(.*?)\1', lambda m: f"\x1b[1m{m.group(2)}\x1b[0m", line)                               # bold
+            line = re.sub(r'^(#{1,6})\s*(.*)', lambda m: f"\x1b[1;35m{' ' * len(m.group(1))} {m.group(2)}\x1b[0m", line)    # headers in magenta
+            line = re.sub(r'^\s*([\*\-\+])\s+(.*)', lambda m: f"  \x1b[93m•\x1b[0m {m.group(2)}", line)                     # unordered lists
+            line = re.sub(r'^(\d+\.)\s+(.*)', lambda m: f" \x1b[93m{m.group(1)}\x1b[0m {m.group(2)}", line)                 # ordered lists
 
             # replace all inline code placeholders in this line w/ real code
             for snippet in code_snippets:
                 line = line.replace('1NL1NECODE', f"\x1b[1;36m{snippet}\x1b[0m", 1)
 
             try:
-                wrapped_text = ansiwrap_hotoffthehamster.fill(
-                    line,
-                    width=width,
-                    replace_whitespace=True,
-                    drop_whitespace=True,
-                    break_on_hyphens=False
-                )
+                width = shutil.get_terminal_size().columns
+                wrapped_text = ansiwrap_hotoffthehamster.fill(line, width=width, replace_whitespace=True, 
+                                                              drop_whitespace=True, break_on_hyphens=False)
                 output.append(wrapped_text)
             except Exception as e:
                 print(f"Error wrapping text: {str(e)}")
                 output.append(line)
 
     return '\n'.join(output)  # join all members of list var into one big str, joined with newlines
-
-
-def print_rule(color: str):
-
-    if color not in color_codes:
-        color = "green"  # default color if an invalid color is specified
-
-    rule = "─" * os.get_terminal_size().columns
-    colored_rule = color_codes[color] + rule + color_codes["reset"]
-    print(colored_rule)
 

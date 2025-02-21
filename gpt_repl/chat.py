@@ -8,7 +8,7 @@ import sys
 import os
 import json
 from datetime import datetime
-from gpt_repl.render import render, print_rule
+from gpt_repl.render import render, print_rule, clear_lines, count_lines 
 from gpt_repl.input import getch
 
 def sel_chat():
@@ -16,45 +16,46 @@ def sel_chat():
     page_size = 5
     current_page = 0
     max_page = (len(chat_dirs) + page_size - 1) // page_size
-
-    # save initial cursor pos
-    sys.stdout.write("\x1b[s")
-    sys.stdout.flush()
+    num_lines = 0
 
     while 1:
         start = current_page * page_size
         end = start + page_size
         displayed_chats = chat_dirs[start:end]
 
-        # update cursor pos to initial pos, clear to end of screen
-        sys.stdout.write("\x1b[u\x1b[J")
-        sys.stdout.flush()
-
-        print(f"\nSelect chat: (0-{page_size}, default: 0)")
-        print("\n\x1b[96m\x1b[1m0. New Chat\x1b[0m")
+        clear_lines(num_lines)
+        output_str = f"\nSelect chat: (0-{page_size}, default: 0)\n\n"
+        output_str += "\x1b[96m\x1b[1m0. New Chat\x1b[0m\n"
 
         for i, chat in enumerate(displayed_chats, 1):
             title_file = os.path.join(chat, 'title.txt')
             if os.path.exists(title_file):
                 with open(title_file, 'r') as file:
-                    print(f"{i}. {file.read().strip()}")
+                    chat_title = file.read().strip()
             else:
-                print(f"{i}. {os.path.basename(chat)}")
+               chat_title = os.path.basename(chat)
 
-        print()
+            output_str += f"{i}. {chat_title}\n"
+
+        output_str += "\n"
         
-        if current_page + 1 < max_page:
+        if current_page == 0:
+            prompt_str = f"(Showing {start + 1}-{start + len(displayed_chats)}: n for next page): "
+        elif current_page + 1 < max_page:
             prompt_str = f"(Showing {start + 1}-{start + len(displayed_chats)}: n for next page, p for previous): "
         else:
             prompt_str = f"(Showing {start + 1}-{start + len(displayed_chats)}: p for previous): "
-        sys.stdout.write(prompt_str)
-        sys.stdout.flush()
+
+        output_str += prompt_str
+        num_lines = count_lines(output_str) - 1
+
+        sys.stdout.write(output_str)
+        sys.stdout.flush
 
         choice = getch().lower()
 
         if choice == '\n' or choice == '\r':
-            sys.stdout.write("\x1b[u\x1b[J")
-            sys.stdout.flush()
+            clear_lines(num_lines)
             return None
         elif choice == 'q' or choice == '\x03': # ctrl-c
             sys.stdout.write("\r\x1b[K")
@@ -66,16 +67,14 @@ def sel_chat():
         elif choice == 'p' and current_page > 0:
             current_page -= 1
         elif choice.isdigit() and int(choice) > 0 and int(choice) <= len(displayed_chats):
-            sys.stdout.write("\x1b[u\x1b[J")
-            sys.stdout.flush()
+            clear_lines(num_lines)
             return chat_dirs[start + int(choice) - 1]
         elif choice == '0':
-            sys.stdout.write("\x1b[u\x1b[J")
-            sys.stdout.flush()
+            clear_lines(num_lines)
             return None
 
 
-def mkdir_new_chat(model: str, title_gen_model: str, user_input: str, assistant_response: str):
+def mkdir_new_chat(model: str, user_input: str):
 
     # replace `/` with `_` so model can be used as a dir name
     model_dir = model.replace('/', '_')
@@ -98,27 +97,11 @@ def mkdir_new_chat(model: str, title_gen_model: str, user_input: str, assistant_
     # initialize empty chat.md file
     open(os.path.join(chat_dir, 'chat.md'), "w").close()
 
-    if title_gen_model:
+    chat_title = f"{user_input[:25]}.. [{model_name}]"
 
-        from litellm import completion
-
-        generated_title = ""
-        chat_str = f"User: {user_input[:1000]}\nAssistant: {assistant_response[:1000]}"
-        task = "Using a maximum of 4 words, generate a title which captures the main subject of the following trimmed conversation between User and Assistant. Return only the title, nothing else."
-        prompt = f"{task}\n{chat_str}"
-
-        response = completion(model=title_gen_model, messages=[{"role": "user", "content": prompt}], max_tokens=20)
-        generated_title = response.choices[0].message.content
-
-        # sanitize odd responses
-        generated_title = generated_title[:30]
-        generated_title = generated_title.replace('\t', ' ').replace('\n', ' ')
-        chars_to_strip = ' .!?\t\n\'"'
-        generated_title = f"{generated_title.strip(chars_to_strip)} [{model_name}]"
-
-        # write title
-        with open(os.path.join(chat_dir, "title.txt"), "w") as f:
-            f.write(generated_title)
+    # write title
+    with open(os.path.join(chat_dir, "title.txt"), "w") as f:
+        f.write(chat_title)
 
     return chat_dir
 

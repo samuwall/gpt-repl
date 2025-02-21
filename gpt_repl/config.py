@@ -53,7 +53,6 @@ conf_str = """
 #   model
 #   renderer
 #   always_new_chat
-#   title_gen_model
 
 # INITIAL SYSTEM PROMPT (only applies to new chats):
 system-prompt = You are a helpful assistant.
@@ -71,8 +70,5 @@ renderer = lite
 
 # ALWAYS CREATE A NEW CHAT WITHOUT ASKING TO SELECT FROM PREV CHATS? (true/false):
 always_new_chat = false
-
-# GENERATE CHAT TITLES?:
-title_gen_model = anthropic/claude-3-5-haiku-latest
 
 """

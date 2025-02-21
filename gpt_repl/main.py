@@ -15,7 +15,7 @@ from gpt_repl.code_clipboard import copy_code_block
 from gpt_repl.help import help_runtime
 from gpt_repl.render import print_rule, render, color_codes, provider_color_table
 from gpt_repl.chat import sel_chat, mkdir_new_chat, load_chat, print_chat, save_chat
-from gpt_repl.input import get_user_input
+from gpt_repl.input import get_input
 
 def main():
 
@@ -54,7 +54,6 @@ def main():
     model = config['settings']['model']
     renderer = config['settings']['renderer']
     always_new_chat = config['settings']['always_new_chat']
-    title_gen_model = config['settings']['title_gen_model']
 
     ### assign color ############################
 
@@ -88,7 +87,7 @@ def main():
         ### get user prompt/command #############
 
         try:
-            action, data = get_user_input(prev_input, bindings)
+            action, data = get_input(prev_input, bindings)
         except KeyboardInterrupt:
             break
 
@@ -127,7 +126,7 @@ def main():
         messages.append({"role": "assistant", "content": response})
 
         if is_new_chat:
-            selected_chat = mkdir_new_chat(model, title_gen_model, user_input, response)
+            selected_chat = mkdir_new_chat(model, user_input)
             is_new_chat = False
 
         response = f"\x1b[1m{color_codes[color]}{model}:\x1b[0m {response}"

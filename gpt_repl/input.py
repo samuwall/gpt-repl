@@ -8,6 +8,7 @@ import os
 import sys
 import re
 from prompt_toolkit import prompt
+from gpt_repl.render import count_lines, clear_lines
 
 def getch():
 
@@ -28,16 +29,11 @@ def getch():
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-
-def get_user_input(prev_input, bindings):
-
-    # save initial cursor pos for rewriting input
-    sys.stdout.write("\x1b[s")
-    sys.stdout.flush()
+def get_input(prev_input, bindings):
 
     user_input = prompt(": ", key_bindings=bindings, default=prev_input).strip()
-    normalized_input = user_input.lower()
 
+    normalized_input = user_input.lower()
     if normalized_input in ["q", "quit"]:
         return ('quit', None)
     elif normalized_input in ["-h", "--h", "--help"]:
@@ -61,7 +57,6 @@ def get_user_input(prev_input, bindings):
             sys.stdout.flush()
             return ('input', user_input)
         else:
-            # update cursor pos to initial pos
-            sys.stdout.write("\x1b[u")
-            sys.stdout.flush()
+            num_lines = count_lines(f": {user_input}")
+            clear_lines(num_lines)
             return ('cancel', user_input)
