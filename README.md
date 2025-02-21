@@ -17,9 +17,9 @@ Features:
 - Provide runtime help and commands for interacting with the chat
 - Automatically save chat history and system prompts for future reference
 
-To run the script, execute it from the command line. Use the '--config' flag to open the configuration file for editing. Press 'q' or 'quit' to exit the chat, and use '-h' or '--help' to display runtime help.
+To run the script, simply type `gpt`. Use the '--config' flag to open the configuration file for editing. Use '-h' or '--help' while writing prompts to display runtime help, including the list of available commands.
 
-Note: Requires valid API keys to be set as `environment variables`. e.g., `OPENAI_API_KEY=<key>`
+_Note_: Requires valid API keys to be set as environment variables, e.g., `EXPORT OPENAI_API_KEY=<key>`
 
 Setup:
 - `git clone`
