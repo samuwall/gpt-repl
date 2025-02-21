@@ -34,7 +34,7 @@ def get_input(prev_input, bindings):
     user_input = prompt(": ", key_bindings=bindings, default=prev_input).strip()
 
     normalized_input = user_input.lower()
-    if normalized_input in ["q", "quit"]:
+    if normalized_input in ["q", "-q"]:
         return ('quit', None)
     elif normalized_input in ["-h", "--h", "--help"]:
         return ('help', None)

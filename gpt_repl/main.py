@@ -79,7 +79,7 @@ def main():
         print_chat(selected_chat, renderer, color)
     else:
         is_new_chat = True
-        print(f"\n\x1b[1m{color_codes[color]}{model}:\x1b[0m How can I help you today? \x1b[96m'q' to quit '-h' for help\x1b[0m")
+        print(f"\n\x1b[1m{color_codes[color]}{model}:\x1b[0m How can I help you today? \x1b[96m'-h' for help\x1b[0m")
         print_rule(color)
 
     ### MAIN REPL LOOP ##########################

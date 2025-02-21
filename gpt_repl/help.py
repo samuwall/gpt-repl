@@ -4,12 +4,14 @@
 ##
 #################################################
 
+from gpt_repl.render import md2ansi
+
 runtime_help_str = """
 Welcome to gpt-repl, a terminal-based gpt chat-bot!
 
 ### Available Runtime Commands
 
-- `q` or `quit`: Exit the program.
+- `-q` or `q`: Exit the program.
 - `-h` or `--help`: Display this help message.
 - `-c <code_block_index>`: Copy a code block (1-N from top to bottom) to your clipboard. Only applies to most recent API response.
 - `-p <renderer>`: Re-print the current API response with a different text renderer ('raw', 'lite', or 'rich')
@@ -37,5 +39,5 @@ Welcome to gpt-repl, a terminal-based gpt chat-bot!
   """
 
 def help_runtime():
-    # print(md2ansi(runtime_help_str))
-    print(runtime_help_str)
+    print(md2ansi(runtime_help_str))
+    # print(runtime_help_str)
