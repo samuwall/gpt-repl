@@ -8,12 +8,13 @@ import sys
 import argparse
 import threading
 import importlib
+import shutil
 from prompt_toolkit.key_binding import KeyBindings
 from gpt_repl.config import get_config_path, open_conf_file, load_config
 from gpt_repl.spinner import Spinner
 from gpt_repl.code_clipboard import copy_code_block
 from gpt_repl.help import help_runtime
-from gpt_repl.render import print_rule, render, color_codes, provider_color_table
+from gpt_repl.render import print_rule, render, count_lines, clear_lines, color_codes, provider_color_table
 from gpt_repl.chat import sel_chat, mkdir_new_chat, load_chat, print_chat, save_chat
 from gpt_repl.input import get_input
 
@@ -53,6 +54,7 @@ def main():
     config = load_config(config_path)
     model = config['settings']['model']
     renderer = config['settings']['renderer']
+    stream = config['settings']['stream']
     always_new_chat = config['settings']['always_new_chat']
 
     ### assign color ############################
@@ -118,21 +120,48 @@ def main():
 
         spinner.start()
         load_thread.join()
-        from litellm import completion
-
+        from litellm import completion, stream_chunk_builder
         messages.append({"role": "user", "content": user_input})
-        response_obj = completion(model=model, messages=messages)
-        response = response_obj.choices[0].message.content
-        messages.append({"role": "assistant", "content": response})
 
+        if (stream == "true"):
+            response_obj = completion(model=model, messages=messages, stream=True)
+            spinner.stop()
+
+            prefix = f"\n\x1b[1m{color_codes[color]}{model}:\x1b[0m\n\n"
+            print(prefix, end="")
+            output = ""
+            chunks = []
+
+            for chunk in response_obj:
+                chunks.append(chunk)
+                delta = chunk.choices[0].delta.content or ""
+                print(delta, end="", flush=True)
+                output += delta
+                num_lines = count_lines(output)
+                if (num_lines > shutil.get_terminal_size().lines - 10):
+                    clear_lines(num_lines - 1)
+                    output = ""
+            
+            response_obj = stream_chunk_builder(chunks)
+            response = response_obj.choices[0].message.content
+            messages.append({"role": "assistant", "content": response})
+            response = f"\x1b[1m{color_codes[color]}{model}:\x1b[0m {response}"
+
+            num_lines = count_lines(output + prefix)
+            clear_lines(num_lines - 1)
+
+        else:
+            response_obj = completion(model=model, messages=messages)
+            response = response_obj.choices[0].message.content
+            messages.append({"role": "assistant", "content": response})
+            response = f"\x1b[1m{color_codes[color]}{model}:\x1b[0m {response}"
+            spinner.stop()
+        
         if is_new_chat:
             selected_chat = mkdir_new_chat(model, user_input)
             is_new_chat = False
 
-        response = f"\x1b[1m{color_codes[color]}{model}:\x1b[0m {response}"
         save_chat(selected_chat, messages, user_input, response)
-
-        spinner.stop()
         render(response, color, renderer)
 
 

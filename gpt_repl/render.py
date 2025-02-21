@@ -63,10 +63,10 @@ def count_lines(print_str: str):
 
 
 def clear_lines(num_lines: int):
-  if num_lines > 0:
-    sys.stdout.write(f"\x1b[{num_lines}A")  # move cursor up num_lines
-    sys.stdout.write("\r\x1b[J")            # clear from cursor to end of screen
-    sys.stdout.flush()
+    if num_lines > 0:
+        sys.stdout.write(f"\x1b[{num_lines}A")  # move cursor up num_lines
+        sys.stdout.write("\r\x1b[J")            # clear from cursor to end of screen
+        sys.stdout.flush()
 
 
 def render(markdown_str: str, color: str, renderer: str):

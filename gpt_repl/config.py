@@ -52,6 +52,7 @@ conf_str = """
 #   system-prompt
 #   model
 #   renderer
+#   stream
 #   always_new_chat
 
 # INITIAL SYSTEM PROMPT (only applies to new chats):
@@ -59,14 +60,17 @@ system-prompt = You are a helpful assistant.
 #system-prompt = You are Lebron James. You will respond only in the style of a Lebron James Instagram caption, complete with catchphrases and an overuse of emojis.
 
 # GPT MODEL (https://docs.litellm.ai/docs/providers):
-model = openai/gpt-4o-mini
-#model = openai/o1-mini
+#model = openai/gpt-4o-mini
+model = openai/o1-mini
 #model = anthropic/claude-3-5-haiku-latest
 
 # DEFAULT TEXT RENDERER:
 #renderer = raw
 renderer = lite
 #renderer = rich
+
+# STREAM MODEL RESPONSE? (true/false)
+stream = false
 
 # ALWAYS CREATE A NEW CHAT WITHOUT ASKING TO SELECT FROM PREV CHATS? (true/false):
 always_new_chat = false
