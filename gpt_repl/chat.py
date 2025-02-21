@@ -97,7 +97,22 @@ def mkdir_new_chat(model: str, user_input: str):
     # initialize empty chat.md file
     open(os.path.join(chat_dir, 'chat.md'), "w").close()
 
-    chat_title = f"{user_input[:25]}.. [{model_name}]"
+    if len(user_input) > 28:
+        trunc = user_input[:28]
+        base = trunc[:-5]
+        gray = trunc[-5:]
+        gradient = ""
+        for i, char in enumerate(gray):
+            color = 250 - (i * 3)
+            gradient += f"\x1b[38;5;{color}m{char}"
+        gradient += "\x1b[0m"
+
+        user_input = base + gradient
+
+    # if len(user_input) > 28:
+    #     user_input = user_input[:26] + "\x1b[90m..\x1b[0m"
+
+    chat_title = f"{user_input} [{model_name}]"
 
     # write title
     with open(os.path.join(chat_dir, "title.txt"), "w") as f:
