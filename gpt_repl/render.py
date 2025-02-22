@@ -48,6 +48,7 @@ def count_lines(print_str: str):
 
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     print_str = ansi_escape.sub('', print_str)
+    print_str = print_str.expandtabs()
     
     width = shutil.get_terminal_size().columns
     total_rows = 0
